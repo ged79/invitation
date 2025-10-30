@@ -197,7 +197,7 @@ export default function WeddingInvitation() {
         </div>
 
         {/* Gallery - Right Side */}
-        <div className="w-full md:w-1/2 bg-white/50 py-16 px-6 overflow-y-auto">
+        <div className="w-full md:w-1/2 bg-white/50 py-16 px-6 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', willChange: 'scroll-position' }}>
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
 

@@ -72,6 +72,17 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Smooth scrolling for all scrollable areas */
+* {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent scroll bounce on mobile */
+body {
+  overscroll-behavior-y: none;
+}
+
 /* Hide scrollbar but keep functionality */
 ::-webkit-scrollbar {
   width: 0px;

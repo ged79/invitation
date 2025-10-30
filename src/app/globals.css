@@ -99,3 +99,15 @@ html {
 .animate-fall {
   animation: fall linear infinite;
 }
+
+/* Scroll fade-in animation */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+[data-animate].visible {
+  opacity: 1;
+  transform: translateY(0);
+}

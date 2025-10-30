@@ -13,6 +13,7 @@ export default function WeddingInvitation() {
   const [messages, setMessages] = useState<any[]>([])
   const [isLoadingMessages, setIsLoadingMessages] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     // Create falling petals with colors
@@ -26,6 +27,24 @@ export default function WeddingInvitation() {
     }))
     setPetals(petalArray as any)
   }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set(prev).add(entry.target.id))
+          }
+        })
+      },
+      { threshold: 0.1 }
+    )
+
+    const sections = document.querySelectorAll('[data-animate]')
+    sections.forEach((section) => observer.observe(section))
+
+    return () => observer.disconnect()
+  }, [isMounted])
 
   useEffect(() => {
     setIsMounted(true)
@@ -118,6 +137,28 @@ export default function WeddingInvitation() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] relative overflow-hidden">
+      {/* Background Music */}
+      {isMounted && (
+        <>
+          <audio ref={audioRef} loop>
+            <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg" />
+          </audio>
+
+          {/* Music Control Button */}
+          <button
+            onClick={toggleMusic}
+            className="fixed top-6 right-6 z-50 bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all"
+            aria-label="음악 재생/정지"
+          >
+            {isPlaying ? (
+              <Volume2 className="w-5 h-5 text-[#D4AF37]" />
+            ) : (
+              <VolumeX className="w-5 h-5 text-gray-400" />
+            )}
+          </button>
+        </>
+      )}
+
       {/* Falling Petals */}
       <div className="fixed inset-0 pointer-events-none z-50">
         {petals.map((petal: any) => (
@@ -147,7 +188,7 @@ export default function WeddingInvitation() {
 
         {/* Gallery - Right Side */}
         <div className="w-full md:w-1/2 bg-white/50 py-16 px-6 overflow-y-auto">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
 
             {/* Vertical layout */}
@@ -163,8 +204,8 @@ export default function WeddingInvitation() {
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <img
-                    src="/images/2.png"
-                    alt="Wedding Photo 2"
+                    src="/images/13.png"
+                    alt="Wedding Photo 13"
                     className="w-full h-auto object-cover"
                   />
                 </div>
@@ -204,7 +245,7 @@ export default function WeddingInvitation() {
       </section>
 
       {/* Main Message */}
-      <section className="py-16 px-6 text-center slide-up">
+      <section id="intro" data-animate className={`py-16 px-6 text-center ${visibleSections.has('intro') ? 'visible' : ''}`}>
         {/* M Logo Image - Outside container to be larger */}
         <div className="mb-8 flex justify-center">
           <img
@@ -301,7 +342,7 @@ export default function WeddingInvitation() {
       </section>
 
       {/* Contact Buttons */}
-      <section className="py-8 px-6">
+      <section id="contact" data-animate className={`py-8 px-6 ${visibleSections.has('contact') ? 'visible' : ''}`}>
         <div className="max-w-md mx-auto grid grid-cols-2 gap-4">
           {/* Groom Contact */}
           <div>
@@ -348,7 +389,7 @@ export default function WeddingInvitation() {
       </section>
 
       {/* Guest Book */}
-      <section className="py-16 px-6 bg-[#FAFAF8]">
+      <section id="guestbook" data-animate className={`py-16 px-6 bg-[#FAFAF8] ${visibleSections.has('guestbook') ? 'visible' : ''}`}>
         <div className="max-w-lg mx-auto text-center">
           <h2 className="text-xl text-gray-600 mb-2" style={{ letterSpacing: '0.05em' }}>[Guest book]</h2>
           <p className="text-sm text-gray-400 mb-8">신랑 신부에게 소중한 축하메시지를 남겨주세요!</p>
@@ -430,7 +471,7 @@ export default function WeddingInvitation() {
       </section>
 
       {/* Account Info */}
-      <section className="py-16 px-6 bg-white/50">
+      <section id="account" data-animate className={`py-16 px-6 bg-white/50 ${visibleSections.has('account') ? 'visible' : ''}`}>
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">마음 전하실 곳</h2>
 
@@ -485,7 +526,7 @@ export default function WeddingInvitation() {
       </section>
 
       {/* Venue Info */}
-      <section className="py-16 px-6">
+      <section id="venue" data-animate className={`py-16 px-6 ${visibleSections.has('venue') ? 'visible' : ''}`}>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-serif text-[#D4AF37] mb-8">오시는 길</h2>
 

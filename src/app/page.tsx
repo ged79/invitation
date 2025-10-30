@@ -2,11 +2,17 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Heart, Music, Volume2, VolumeX, Phone, MessageCircle, MapPin, Calendar, Clock, Share2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 export default function WeddingInvitation() {
   const [isPlaying, setIsPlaying] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const [petals, setPetals] = useState<Array<{ id: number; left: number; delay: number; duration: number }>>([])
+  const [guestBook, setGuestBook] = useState({ name: '', password: '', message: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [messages, setMessages] = useState<any[]>([])
+  const [isLoadingMessages, setIsLoadingMessages] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
     // Create falling petals with colors
@@ -21,12 +27,67 @@ export default function WeddingInvitation() {
     setPetals(petalArray as any)
   }, [])
 
+  useEffect(() => {
+    setIsMounted(true)
+    fetchMessages()
+  }, [])
+
+  const fetchMessages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('invitation')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setMessages(data || [])
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+    } finally {
+      setIsLoadingMessages(false)
+    }
+  }
+
   const copyToClipboard = async (accountNumber: string, name: string) => {
     try {
       await navigator.clipboard.writeText(accountNumber)
       alert(`${name} 계좌번호가 복사되었습니다.`)
     } catch (err) {
       alert('복사에 실패했습니다.')
+    }
+  }
+
+  const handleGuestBookSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!guestBook.name || !guestBook.message) {
+      alert('이름과 메시지를 입력해주세요.')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const { error } = await supabase
+        .from('invitation')
+        .insert([
+          {
+            name: guestBook.name,
+            message: guestBook.message,
+            password: guestBook.password || null
+          }
+        ])
+
+      if (error) throw error
+
+      alert('축하 메시지가 등록되었습니다!')
+      setGuestBook({ name: '', password: '', message: '' })
+      fetchMessages() // Refresh messages after submission
+    } catch (error) {
+      console.error('Error submitting message:', error)
+      alert('메시지 등록에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -292,18 +353,22 @@ export default function WeddingInvitation() {
           <h2 className="text-xl text-gray-600 mb-2" style={{ letterSpacing: '0.05em' }}>[Guest book]</h2>
           <p className="text-sm text-gray-400 mb-8">신랑 신부에게 소중한 축하메시지를 남겨주세요!</p>
 
-          <div className="space-y-3">
+          <form onSubmit={handleGuestBookSubmit} className="space-y-3">
             {/* Name and Password */}
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
                 placeholder="이름"
+                value={guestBook.name}
+                onChange={(e) => setGuestBook({ ...guestBook, name: e.target.value })}
                 className="px-4 py-2 bg-[#F0F0F0] border-0 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                 style={{ fontSize: '15px' }}
               />
               <input
                 type="password"
                 placeholder="비밀번호"
+                value={guestBook.password}
+                onChange={(e) => setGuestBook({ ...guestBook, password: e.target.value })}
                 className="px-4 py-2 bg-[#F0F0F0] border-0 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
                 style={{ fontSize: '15px' }}
               />
@@ -314,15 +379,53 @@ export default function WeddingInvitation() {
               placeholder="메시지 (40자 이내로 등록)"
               rows={4}
               maxLength={40}
+              value={guestBook.message}
+              onChange={(e) => setGuestBook({ ...guestBook, message: e.target.value })}
               className="w-full px-4 py-4 bg-[#F0F0F0] border-0 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 resize-none"
               style={{ fontSize: '15px' }}
             />
 
             {/* Submit Button */}
-            <button className="w-full py-4 bg-[#6B7280] text-white font-medium hover:bg-[#5B6370] transition-colors" style={{ fontSize: '15px' }}>
-              축하 메시지 등록
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-4 bg-[#6B7280] text-white font-medium hover:bg-[#5B6370] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ fontSize: '15px' }}
+            >
+              {isSubmitting ? '등록 중...' : '축하 메시지 등록'}
             </button>
-          </div>
+          </form>
+
+          {/* Messages Display */}
+          {isMounted && (
+            <div className="mt-12">
+              <h3 className="text-lg text-gray-600 text-center mb-6">축하 메시지</h3>
+
+              {isLoadingMessages ? (
+                <p className="text-center text-gray-400">메시지를 불러오는 중...</p>
+              ) : messages.length === 0 ? (
+                <p className="text-center text-gray-400">첫 번째 축하 메시지를 남겨주세요!</p>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {messages.map((msg) => (
+                    <div key={msg.id} className="bg-white rounded-lg p-4 shadow-sm text-left">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-medium text-gray-700">{msg.name}</span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(msg.created_at).toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 whitespace-pre-wrap text-left">{msg.message}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

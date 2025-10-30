@@ -49,6 +49,16 @@ export default function WeddingInvitation() {
   useEffect(() => {
     setIsMounted(true)
     fetchMessages()
+
+    // Autoplay music when page loads
+    if (audioRef.current) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true)
+      }).catch((error) => {
+        console.log('Autoplay prevented:', error)
+        // Autoplay was prevented, user will need to click the button
+      })
+    }
   }, [])
 
   const fetchMessages = async () => {
@@ -140,7 +150,7 @@ export default function WeddingInvitation() {
       {/* Background Music */}
       {isMounted && (
         <>
-          <audio ref={audioRef} loop>
+          <audio ref={audioRef} loop autoPlay>
             <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg" />
           </audio>
 

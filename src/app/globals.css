@@ -67,15 +67,27 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Smooth scroll */
-html {
-  scroll-behavior: smooth;
+/* Smooth scroll - PC only */
+@media (hover: hover) and (pointer: fine) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Mobile optimizations */
+@media (hover: none) and (pointer: coarse) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 /* Prevent scroll bounce on mobile */
 body {
   overscroll-behavior-y: none;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Hide scrollbar but keep functionality */
@@ -117,10 +129,18 @@ body {
   will-change: transform, opacity;
 }
 
-/* Hardware acceleration for fixed elements */
-header, .fixed {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+/* Hardware acceleration for fixed elements - Mobile optimization */
+@media (hover: none) and (pointer: coarse) {
+  .fixed {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Optimize header transform on mobile */
+  header {
+    will-change: transform;
+  }
 }
 
 /* Scroll fade-in animation */

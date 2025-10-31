@@ -65,12 +65,26 @@ export default function WeddingInvitation() {
       })
     }
 
-    // Handle scroll for header with throttle
+    // Handle scroll for header with improved throttle
+    let lastScrollY = 0
     let ticking = false
+
     const handleScroll = () => {
+      lastScrollY = window.scrollY
+
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          setShowHeader(window.scrollY > 300)
+          const halfScreenHeight = window.innerHeight * 0.5
+          const shouldShow = lastScrollY > halfScreenHeight
+
+          // Only update if state actually changes
+          setShowHeader((prev) => {
+            if (prev !== shouldShow) {
+              return shouldShow
+            }
+            return prev
+          })
+
           ticking = false
         })
         ticking = true
@@ -168,7 +182,12 @@ export default function WeddingInvitation() {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Use smooth scroll on desktop, instant on mobile
+      const isMobile = 'ontouchstart' in window
+      element.scrollIntoView({
+        behavior: isMobile ? 'auto' : 'smooth',
+        block: 'start'
+      })
     }
   }
 
@@ -214,9 +233,15 @@ export default function WeddingInvitation() {
     <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] relative overflow-x-hidden">
       {/* Sticky Header */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/98 border-b border-gray-200 transition-transform duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 bg-white/90 border-b border-gray-200 ${
           showHeader ? 'translate-y-0' : '-translate-y-full'
         }`}
+        style={{
+          transform: showHeader ? 'translate3d(0, 0, 0)' : 'translate3d(0, -100%, 0)',
+          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+          WebkitTransform: showHeader ? 'translate3d(0, 0, 0)' : 'translate3d(0, -100%, 0)',
+          WebkitTransition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
       >
         <nav className="max-w-4xl mx-auto px-6 py-4">
           <ul className="flex justify-around items-center text-sm text-gray-700">
@@ -281,8 +306,8 @@ export default function WeddingInvitation() {
         </>
       )}
 
-      {/* Falling Petals */}
-      <div className="fixed inset-0 pointer-events-none z-10">
+      {/* Falling Petals - Optimized for mobile */}
+      <div className="fixed inset-0 pointer-events-none z-10" style={{ willChange: 'auto' }}>
         {petals.map((petal: any) => (
           <div
             key={petal.id}
@@ -297,21 +322,19 @@ export default function WeddingInvitation() {
           </div>
         ))}
       </div>
-      {/* Hero and Gallery Section - Side by Side */}
-      <section id="hero" className="relative min-h-screen w-full flex flex-col md:flex-row">
-        {/* Hero Photo - Left Side */}
-        <div className="relative w-full md:w-1/2 h-screen bg-white">
-          <img
-            src="/images/hero.png"
-            alt="임진석♥신해숙"
-            className="w-full h-full object-cover"
-          />
-        </div>
+      {/* Hero Section */}
+      <section id="hero" className="relative w-full h-screen bg-white">
+        <img
+          src="/images/hero.png"
+          alt="임진석♥신해숙"
+          className="w-full h-full object-cover object-top"
+        />
+      </section>
 
-        {/* Gallery - Right Side */}
-        <div id="gallery" className="w-full md:w-1/2 bg-white/50 py-16 px-6 md:overflow-y-auto">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
+      {/* Gallery Section */}
+      <section id="gallery" className="w-full bg-white/50 py-16 px-6">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
 
             {/* Vertical layout */}
             <div className="flex flex-col gap-2">
@@ -373,7 +396,6 @@ export default function WeddingInvitation() {
               </div>
             </div>
           </div>
-        </div>
       </section>
 
       {/* Main Message */}

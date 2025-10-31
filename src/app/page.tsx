@@ -14,6 +14,11 @@ export default function WeddingInvitation() {
   const [isLoadingMessages, setIsLoadingMessages] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showHeader, setShowHeader] = useState(false)
+
+  const galleryImages = [1, 13, 3, 4, 5, 6, 7, 8, 9, 10]
 
   useEffect(() => {
     // Create falling petals with colors
@@ -59,6 +64,14 @@ export default function WeddingInvitation() {
         // Autoplay was prevented, user will need to click the button
       })
     }
+
+    // Handle scroll for header
+    const handleScroll = () => {
+      setShowHeader(window.scrollY > 300)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const fetchMessages = async () => {
@@ -145,8 +158,101 @@ export default function WeddingInvitation() {
     }
   }
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  const openGallery = (index: number) => {
+    console.log('Opening gallery with index:', index, 'Image:', galleryImages[index])
+    setCurrentImageIndex(index)
+    setGalleryOpen(true)
+  }
+
+  const closeGallery = () => {
+    setGalleryOpen(false)
+  }
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length)
+  }
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
+  }
+
+  useEffect(() => {
+    if (!galleryOpen) return
+
+    // Prevent body scroll when gallery is open
+    document.body.style.overflow = 'hidden'
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') nextImage()
+      if (e.key === 'ArrowLeft') prevImage()
+      if (e.key === 'Escape') closeGallery()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
+  }, [galleryOpen, currentImageIndex])
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] relative overflow-x-hidden">
+      {/* Sticky Header */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-sm border-b border-gray-200 transition-transform duration-300 ${
+          showHeader ? 'translate-y-0' : '-translate-y-full'
+        }`}
+        style={{ transform: showHeader ? 'translateY(0)' : 'translateY(-100%)', transition: 'transform 0.3s ease-in-out' }}
+      >
+        <nav className="max-w-4xl mx-auto px-6 py-4">
+          <ul className="flex justify-around items-center text-sm text-gray-700">
+            <li>
+              <button
+                onClick={() => scrollToSection('hero')}
+                className="hover:text-[#D4AF37] transition-colors"
+              >
+                처음으로
+              </button>
+            </li>
+            <li className="text-gray-300">|</li>
+            <li>
+              <button
+                onClick={() => scrollToSection('gallery')}
+                className="hover:text-[#D4AF37] transition-colors"
+              >
+                갤러리보기
+              </button>
+            </li>
+            <li className="text-gray-300">|</li>
+            <li>
+              <button
+                onClick={() => scrollToSection('guestbook')}
+                className="hover:text-[#D4AF37] transition-colors"
+              >
+                축하메시지
+              </button>
+            </li>
+            <li className="text-gray-300">|</li>
+            <li>
+              <button
+                onClick={() => scrollToSection('venue')}
+                className="hover:text-[#D4AF37] transition-colors"
+              >
+                찾아오는길
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
       {/* Background Music */}
       {isMounted && (
         <>
@@ -186,18 +292,18 @@ export default function WeddingInvitation() {
         ))}
       </div>
       {/* Hero and Gallery Section - Side by Side */}
-      <section className="relative min-h-screen w-full flex flex-col md:flex-row">
+      <section id="hero" className="relative min-h-screen w-full flex flex-col md:flex-row">
         {/* Hero Photo - Left Side */}
-        <div className="relative w-full md:w-1/2 h-screen">
+        <div className="relative w-full md:w-1/2 min-h-screen bg-white flex items-center justify-center">
           <img
             src="/images/hero.png"
             alt="임진석♥신해숙"
-            className="w-full h-full object-cover"
+            className="w-full h-auto max-h-screen object-contain md:w-full md:h-full md:object-cover"
           />
         </div>
 
         {/* Gallery - Right Side */}
-        <div className="w-full md:w-1/2 bg-white/50 py-16 px-6 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', willChange: 'scroll-position' }}>
+        <div id="gallery" className="w-full md:w-1/2 bg-white/50 py-16 px-6 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
 
@@ -248,6 +354,16 @@ export default function WeddingInvitation() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Gallery Viewer Section */}
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <button
+                  onClick={() => openGallery(0)}
+                  className="w-full py-4 bg-[#D4AF37] text-white text-center font-medium rounded-lg hover:bg-[#C4A030] transition-colors shadow-sm"
+                >
+                  Gallery Viewer
+                </button>
               </div>
             </div>
           </div>
@@ -633,6 +749,101 @@ export default function WeddingInvitation() {
           </div>
         </div>
       </section>
+
+      {/* Fullscreen Gallery Viewer */}
+      {galleryOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
+          onTouchStart={(e) => {
+            const touch = e.touches[0]
+            const startX = touch.clientX
+            const handleTouchEnd = (endEvent: TouchEvent) => {
+              const endX = endEvent.changedTouches[0].clientX
+              const diff = startX - endX
+              if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                  nextImage()
+                } else {
+                  prevImage()
+                }
+              }
+              document.removeEventListener('touchend', handleTouchEnd)
+            }
+            document.addEventListener('touchend', handleTouchEnd)
+          }}
+        >
+          {/* Close Button */}
+          <button
+            onClick={closeGallery}
+            className="absolute top-6 right-6 z-[101] text-white hover:text-gray-300 transition-colors"
+            aria-label="닫기"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Previous Button */}
+          <button
+            onClick={prevImage}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-[101] text-white hover:text-gray-300 transition-colors p-2"
+            aria-label="이전 사진"
+          >
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Main Image */}
+          <div className="flex-1 flex items-center justify-center p-4 pb-2">
+            <img
+              src={`/images/${galleryImages[currentImageIndex]}.png`}
+              alt={`Wedding Photo ${galleryImages[currentImageIndex]}`}
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+
+          {/* Next Button */}
+          <button
+            onClick={nextImage}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-[101] text-white hover:text-gray-300 transition-colors p-2"
+            aria-label="다음 사진"
+          >
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          {/* Thumbnail Strip */}
+          <div className="w-full px-4 pb-4 pt-2">
+            {/* Image Counter */}
+            <div className="text-center text-white text-sm mb-3">
+              {currentImageIndex + 1} / {galleryImages.length}
+            </div>
+
+            {/* Thumbnails */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-center">
+              {galleryImages.map((imageNum, idx) => (
+                <div
+                  key={imageNum}
+                  onClick={() => setCurrentImageIndex(idx)}
+                  className={`flex-shrink-0 w-16 h-16 cursor-pointer rounded-md overflow-hidden border-2 transition-all ${
+                    idx === currentImageIndex
+                      ? 'border-[#D4AF37] scale-110'
+                      : 'border-gray-600 opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <img
+                    src={`/images/${imageNum}.png`}
+                    alt={`Thumbnail ${imageNum}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="py-12 px-6 text-center">

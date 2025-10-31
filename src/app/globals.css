@@ -83,10 +83,28 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Optimize for mobile browsers (including KakaoTalk) */
+* {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+}
+
 /* Hide scrollbar but keep functionality */
 ::-webkit-scrollbar {
   width: 0px;
   background: transparent;
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Falling petals animation */

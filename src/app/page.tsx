@@ -55,6 +55,15 @@ export default function WeddingInvitation() {
     setIsMounted(true)
     fetchMessages()
 
+    // Set CSS variable for viewport height (for older browsers)
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01
+      document.documentElement.style.setProperty('--vh', `${vh}px`)
+    }
+
+    setVH()
+    window.addEventListener('resize', setVH)
+
     // Autoplay music when page loads
     if (audioRef.current) {
       audioRef.current.play().then(() => {
@@ -68,23 +77,32 @@ export default function WeddingInvitation() {
     // Handle scroll for header with improved throttle
     let lastScrollY = 0
     let ticking = false
+    let lastKnownHeight = window.innerHeight
 
     const handleScroll = () => {
       lastScrollY = window.scrollY
+      const currentHeight = window.innerHeight
+
+      // Detect if viewport height changed (URL bar appearing/disappearing)
+      const viewportChanged = Math.abs(currentHeight - lastKnownHeight) > 50
 
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const halfScreenHeight = window.innerHeight * 0.5
-          const shouldShow = lastScrollY > halfScreenHeight
+          // Skip header update if viewport is actively changing
+          if (!viewportChanged) {
+            const halfScreenHeight = currentHeight * 0.5
+            const shouldShow = lastScrollY > halfScreenHeight
 
-          // Only update if state actually changes
-          setShowHeader((prev) => {
-            if (prev !== shouldShow) {
-              return shouldShow
-            }
-            return prev
-          })
+            // Only update if state actually changes
+            setShowHeader((prev) => {
+              if (prev !== shouldShow) {
+                return shouldShow
+              }
+              return prev
+            })
+          }
 
+          lastKnownHeight = currentHeight
           ticking = false
         })
         ticking = true
@@ -92,7 +110,10 @@ export default function WeddingInvitation() {
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', setVH)
+    }
   }, [])
 
   const fetchMessages = async () => {
@@ -323,11 +344,12 @@ export default function WeddingInvitation() {
         ))}
       </div>
       {/* Hero Section */}
-      <section id="hero" className="relative w-full h-screen bg-white">
+      <section id="hero" className="relative w-full bg-white" style={{ height: '100dvh', minHeight: '100vh' }}>
         <img
           src="/images/hero.png"
           alt="임진석♥신해숙"
-          className="w-full h-full object-cover object-top"
+          className="w-full h-full object-cover object-center"
+          style={{ objectPosition: 'center 40%' }}
         />
       </section>
 

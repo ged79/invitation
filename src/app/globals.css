@@ -83,6 +83,25 @@ h1, h2, h3, h4, h5, h6 {
   * {
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* Fix for mobile address bar height changes */
+  body {
+    position: relative;
+  }
+
+  /* Prevent layout shift when address bar appears/disappears */
+  #hero {
+    position: relative;
+    height: 100dvh;
+    height: 100vh; /* Fallback */
+  }
+
+  /* Support for older browsers */
+  @supports not (height: 100dvh) {
+    #hero {
+      height: calc(var(--vh, 1vh) * 100);
+    }
+  }
 }
 
 /* Prevent scroll bounce on mobile */

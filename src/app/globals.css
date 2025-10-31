@@ -72,23 +72,10 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Smooth scrolling for all scrollable areas */
-* {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* Prevent scroll bounce on mobile */
 body {
   overscroll-behavior-y: none;
-}
-
-/* Optimize for mobile browsers (including KakaoTalk) */
-* {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-perspective: 1000;
-  perspective: 1000;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Hide scrollbar but keep functionality */
@@ -127,6 +114,13 @@ body {
 
 .animate-fall {
   animation: fall linear infinite;
+  will-change: transform, opacity;
+}
+
+/* Hardware acceleration for fixed elements */
+header, .fixed {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* Scroll fade-in animation */

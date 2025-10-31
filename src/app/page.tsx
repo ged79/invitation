@@ -65,12 +65,19 @@ export default function WeddingInvitation() {
       })
     }
 
-    // Handle scroll for header
+    // Handle scroll for header with throttle
+    let ticking = false
     const handleScroll = () => {
-      setShowHeader(window.scrollY > 300)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setShowHeader(window.scrollY > 300)
+          ticking = false
+        })
+        ticking = true
+      }
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -207,10 +214,9 @@ export default function WeddingInvitation() {
     <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] relative overflow-x-hidden">
       {/* Sticky Header */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-sm border-b border-gray-200 transition-transform duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/98 border-b border-gray-200 transition-transform duration-300 ${
           showHeader ? 'translate-y-0' : '-translate-y-full'
         }`}
-        style={{ transform: showHeader ? 'translateY(0)' : 'translateY(-100%)', transition: 'transform 0.3s ease-in-out' }}
       >
         <nav className="max-w-4xl mx-auto px-6 py-4">
           <ul className="flex justify-around items-center text-sm text-gray-700">
@@ -263,7 +269,7 @@ export default function WeddingInvitation() {
           {/* Music Control Button */}
           <button
             onClick={toggleMusic}
-            className="fixed top-6 right-6 z-50 bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all"
+            className="fixed top-6 right-6 z-50 bg-white/90 p-3 rounded-full shadow-lg hover:bg-white transition-all"
             aria-label="음악 재생/정지"
           >
             {isPlaying ? (
@@ -276,7 +282,7 @@ export default function WeddingInvitation() {
       )}
 
       {/* Falling Petals */}
-      <div className="fixed inset-0 pointer-events-none z-50">
+      <div className="fixed inset-0 pointer-events-none z-10">
         {petals.map((petal: any) => (
           <div
             key={petal.id}
@@ -294,16 +300,16 @@ export default function WeddingInvitation() {
       {/* Hero and Gallery Section - Side by Side */}
       <section id="hero" className="relative min-h-screen w-full flex flex-col md:flex-row">
         {/* Hero Photo - Left Side */}
-        <div className="relative w-full md:w-1/2 min-h-screen bg-white flex items-center justify-center">
+        <div className="relative w-full md:w-1/2 h-screen bg-white">
           <img
             src="/images/hero.png"
             alt="임진석♥신해숙"
-            className="w-full h-auto max-h-screen object-contain md:w-full md:h-full md:object-cover"
+            className="w-full h-full object-cover"
           />
         </div>
 
         {/* Gallery - Right Side */}
-        <div id="gallery" className="w-full md:w-1/2 bg-white/50 py-16 px-6 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div id="gallery" className="w-full md:w-1/2 bg-white/50 py-16 px-6 md:overflow-y-auto">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
 
@@ -424,10 +430,10 @@ export default function WeddingInvitation() {
       {/* Parents Info */}
       <section className="py-12 px-6">
         <div className="max-w-md mx-auto space-y-3 text-center">
-          <p className="text-gray-700" style={{ letterSpacing: '0.05em' }}>
+          <p className="text-gray-700 inline-block" style={{ letterSpacing: '0.05em', minWidth: '280px' }}>
             故임봉원 · 박순옥 의 아들 진석
           </p>
-          <p className="text-gray-700" style={{ letterSpacing: '0.05em' }}>
+          <p className="text-gray-700 inline-block" style={{ letterSpacing: '0.1em', minWidth: '280px' }}>
             故신동욱 · 김용길 의 딸 해숙
           </p>
         </div>
@@ -475,14 +481,14 @@ export default function WeddingInvitation() {
             <p className="text-sm text-center text-gray-600 mb-2">신랑에게 연락하기</p>
             <div className="flex gap-2">
               <a
-                href="tel:013-1333"
+                href="tel:010-4533-1333"
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <Phone className="w-4 h-4" />
                 <span className="text-sm">전화</span>
               </a>
               <a
-                href="sms:013-1333"
+                href="sms:010-4533-1333"
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <MessageCircle className="w-4 h-4" />

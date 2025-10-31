@@ -36,6 +36,8 @@ export default function WeddingInvitation() {
   }, [])
 
   useEffect(() => {
+    if (!isMounted) return
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

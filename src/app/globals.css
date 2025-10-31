@@ -92,15 +92,15 @@ h1, h2, h3, h4, h5, h6 {
   /* Prevent layout shift when address bar appears/disappears */
   #hero {
     position: relative;
-    height: 100dvh;
-    height: 100vh; /* Fallback */
+    /* Use small viewport height - stable during URL bar changes */
+    height: 100svh;
+    min-height: -webkit-fill-available;
   }
 
-  /* Support for older browsers */
-  @supports not (height: 100dvh) {
-    #hero {
-      height: calc(var(--vh, 1vh) * 100);
-    }
+  /* Disable transforms during scroll */
+  #hero img {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 }
 

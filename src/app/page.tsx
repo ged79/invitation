@@ -55,15 +55,6 @@ export default function WeddingInvitation() {
     setIsMounted(true)
     fetchMessages()
 
-    // Set CSS variable for viewport height (for older browsers)
-    const setVH = () => {
-      const vh = window.innerHeight * 0.01
-      document.documentElement.style.setProperty('--vh', `${vh}px`)
-    }
-
-    setVH()
-    window.addEventListener('resize', setVH)
-
     // Autoplay music when page loads
     if (audioRef.current) {
       audioRef.current.play().then(() => {
@@ -77,32 +68,26 @@ export default function WeddingInvitation() {
     // Handle scroll for header with improved throttle
     let lastScrollY = 0
     let ticking = false
-    let lastKnownHeight = window.innerHeight
+    // Use initial viewport height and don't change it
+    const initialHeight = window.innerHeight
 
     const handleScroll = () => {
       lastScrollY = window.scrollY
-      const currentHeight = window.innerHeight
-
-      // Detect if viewport height changed (URL bar appearing/disappearing)
-      const viewportChanged = Math.abs(currentHeight - lastKnownHeight) > 50
 
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          // Skip header update if viewport is actively changing
-          if (!viewportChanged) {
-            const halfScreenHeight = currentHeight * 0.5
-            const shouldShow = lastScrollY > halfScreenHeight
+          // Use initial height to avoid recalculation during URL bar changes
+          const halfScreenHeight = initialHeight * 0.5
+          const shouldShow = lastScrollY > halfScreenHeight
 
-            // Only update if state actually changes
-            setShowHeader((prev) => {
-              if (prev !== shouldShow) {
-                return shouldShow
-              }
-              return prev
-            })
-          }
+          // Only update if state actually changes
+          setShowHeader((prev) => {
+            if (prev !== shouldShow) {
+              return shouldShow
+            }
+            return prev
+          })
 
-          lastKnownHeight = currentHeight
           ticking = false
         })
         ticking = true
@@ -112,7 +97,6 @@ export default function WeddingInvitation() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', setVH)
     }
   }, [])
 
@@ -344,12 +328,11 @@ export default function WeddingInvitation() {
         ))}
       </div>
       {/* Hero Section */}
-      <section id="hero" className="relative w-full bg-white" style={{ height: '100dvh', minHeight: '100vh' }}>
+      <section id="hero" className="relative w-full bg-white overflow-hidden" style={{ height: '100svh' }}>
         <img
           src="/images/hero.png"
           alt="임진석♥신해숙"
-          className="w-full h-full object-cover object-center"
-          style={{ objectPosition: 'center 40%' }}
+          className="w-full h-full object-cover object-top"
         />
       </section>
 

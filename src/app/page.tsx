@@ -17,6 +17,8 @@ export default function WeddingInvitation() {
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showHeader, setShowHeader] = useState(false)
+  const [isKakaoInApp, setIsKakaoInApp] = useState(false)
+  const [showBrowserBanner, setShowBrowserBanner] = useState(false)
 
   const galleryImages = [1, 13, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -54,6 +56,14 @@ export default function WeddingInvitation() {
   useEffect(() => {
     setIsMounted(true)
     fetchMessages()
+
+    // Detect KakaoTalk in-app browser
+    const userAgent = navigator.userAgent.toLowerCase()
+    const isKakao = userAgent.includes('kakaotalk')
+    setIsKakaoInApp(isKakao)
+    if (isKakao) {
+      setShowBrowserBanner(true)
+    }
 
     // Autoplay music when page loads
     if (audioRef.current) {
@@ -196,6 +206,29 @@ export default function WeddingInvitation() {
     }
   }
 
+  const openInExternalBrowser = () => {
+    // Copy current URL to clipboard for easy pasting
+    const currentUrl = window.location.href
+
+    // Try to open in default browser
+    if (navigator.share) {
+      navigator.share({
+        title: '임진석♥신해숙 결혼합니다',
+        url: currentUrl
+      }).catch(() => {
+        // If share fails, copy to clipboard
+        navigator.clipboard.writeText(currentUrl).then(() => {
+          alert('링크가 복사되었습니다.\n기본 브라우저에서 열어주세요.')
+        })
+      })
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(currentUrl).then(() => {
+        alert('링크가 복사되었습니다.\n기본 브라우저(Safari/Chrome)에서 열어주세요.')
+      })
+    }
+  }
+
   const openGallery = (index: number) => {
     console.log('Opening gallery with index:', index, 'Image:', galleryImages[index])
     setCurrentImageIndex(index)
@@ -236,6 +269,33 @@ export default function WeddingInvitation() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] relative overflow-x-hidden">
+      {/* KakaoTalk Browser Notice */}
+      {showBrowserBanner && (
+        <div className="fixed top-0 left-0 right-0 z-[60] bg-[#D4AF37] text-white px-4 py-3 flex items-center justify-between shadow-lg">
+          <div className="flex-1">
+            <p className="text-sm font-medium">더 나은 경험을 위해 외부 브라우저를 권장합니다</p>
+            <p className="text-xs opacity-90 mt-1">Safari 또는 Chrome에서 열어주세요</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={openInExternalBrowser}
+              className="px-4 py-2 bg-white text-[#D4AF37] rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors whitespace-nowrap"
+            >
+              브라우저로 열기
+            </button>
+            <button
+              onClick={() => setShowBrowserBanner(false)}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              aria-label="닫기"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Header */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 bg-white/90 border-b border-gray-200 ${

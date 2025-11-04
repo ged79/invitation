@@ -201,11 +201,32 @@ export default function WeddingInvitation() {
       window.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = 'unset'
     }
-  }, [galleryOpen, currentImageIndex])
+  }, [galleryOpen])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] relative overflow-x-hidden">
-      {/* Sticky Header */}
+      {/* Share Header - Shows at top, disappears on scroll */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-sm border-b border-gray-200 transition-transform duration-300 ${
+          !showHeader ? 'translate-y-0' : '-translate-y-full'
+        }`}
+        style={{ transform: !showHeader ? 'translateY(0)' : 'translateY(-100%)', transition: 'transform 0.3s ease-in-out' }}
+      >
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <p className="text-sm text-gray-700">
+            초대장을 다른 분들과 공유해보세요
+          </p>
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C4A030] transition-colors text-sm font-medium"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>공유하기</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Navigation Header - Shows on scroll */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-sm border-b border-gray-200 transition-transform duration-300 ${
           showHeader ? 'translate-y-0' : '-translate-y-full'
@@ -282,6 +303,7 @@ export default function WeddingInvitation() {
             key={petal.id}
             className="absolute animate-fall"
             style={{
+              top: 0,
               left: `${petal.left}%`,
               animationDelay: `${petal.delay}s`,
               animationDuration: `${petal.duration}s`
@@ -292,18 +314,18 @@ export default function WeddingInvitation() {
         ))}
       </div>
       {/* Hero and Gallery Section - Side by Side */}
-      <section id="hero" className="relative min-h-screen w-full flex flex-col md:flex-row">
+      <section id="hero" className="relative w-full flex flex-col md:flex-row md:min-h-screen pt-16">
         {/* Hero Photo - Left Side */}
-        <div className="relative w-full md:w-1/2 min-h-screen bg-white flex items-center justify-center">
+        <div className="relative w-full md:w-1/2 md:min-h-screen bg-white flex items-center justify-center">
           <img
             src="/images/hero.png"
             alt="임진석♥신해숙"
-            className="w-full h-auto max-h-screen object-contain md:w-full md:h-full md:object-cover"
+            className="w-full h-auto object-contain md:w-full md:h-full md:object-cover"
           />
         </div>
 
         {/* Gallery - Right Side */}
-        <div id="gallery" className="w-full md:w-1/2 bg-white/50 py-16 px-6 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div id="gallery" className="w-full md:w-1/2 bg-white/50 py-16 px-6 md:overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
 
@@ -491,7 +513,7 @@ export default function WeddingInvitation() {
             </div>
           </div>
 
-          {/* Bride Contact */}1
+          {/* Bride Contact */}
           <div>
             <p className="text-sm text-center text-gray-600 mb-2">신부에게 연락하기</p>
             <div className="flex gap-2">

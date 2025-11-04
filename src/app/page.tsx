@@ -17,8 +17,6 @@ export default function WeddingInvitation() {
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showHeader, setShowHeader] = useState(false)
-  const [isKakaoInApp, setIsKakaoInApp] = useState(false)
-  const [showBrowserBanner, setShowBrowserBanner] = useState(false)
 
   const galleryImages = [1, 13, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -36,8 +34,6 @@ export default function WeddingInvitation() {
   }, [])
 
   useEffect(() => {
-    if (!isMounted) return
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -59,14 +55,6 @@ export default function WeddingInvitation() {
     setIsMounted(true)
     fetchMessages()
 
-    // Detect KakaoTalk in-app browser
-    const userAgent = navigator.userAgent.toLowerCase()
-    const isKakao = userAgent.includes('kakaotalk')
-    setIsKakaoInApp(isKakao)
-    if (isKakao) {
-      setShowBrowserBanner(true)
-    }
-
     // Autoplay music when page loads
     if (audioRef.current) {
       audioRef.current.play().then(() => {
@@ -77,39 +65,13 @@ export default function WeddingInvitation() {
       })
     }
 
-    // Handle scroll for header with improved throttle
-    let lastScrollY = 0
-    let ticking = false
-    // Use initial viewport height and don't change it
-    const initialHeight = window.innerHeight
-
+    // Handle scroll for header
     const handleScroll = () => {
-      lastScrollY = window.scrollY
-
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          // Use initial height to avoid recalculation during URL bar changes
-          const halfScreenHeight = initialHeight * 0.5
-          const shouldShow = lastScrollY > halfScreenHeight
-
-          // Only update if state actually changes
-          setShowHeader((prev) => {
-            if (prev !== shouldShow) {
-              return shouldShow
-            }
-            return prev
-          })
-
-          ticking = false
-        })
-        ticking = true
-      }
+      setShowHeader(window.scrollY > 300)
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const fetchMessages = async () => {
@@ -199,35 +161,7 @@ export default function WeddingInvitation() {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
-      // Use smooth scroll on desktop, instant on mobile
-      const isMobile = 'ontouchstart' in window
-      element.scrollIntoView({
-        behavior: isMobile ? 'auto' : 'smooth',
-        block: 'start'
-      })
-    }
-  }
-
-  const openInExternalBrowser = () => {
-    // Copy current URL to clipboard for easy pasting
-    const currentUrl = window.location.href
-
-    // Try to open in default browser
-    if (navigator.share) {
-      navigator.share({
-        title: '임진석♥신해숙 결혼합니다',
-        url: currentUrl
-      }).catch(() => {
-        // If share fails, copy to clipboard
-        navigator.clipboard.writeText(currentUrl).then(() => {
-          alert('링크가 복사되었습니다.\n기본 브라우저에서 열어주세요.')
-        })
-      })
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(currentUrl).then(() => {
-        alert('링크가 복사되었습니다.\n기본 브라우저(Safari/Chrome)에서 열어주세요.')
-      })
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
 
@@ -271,44 +205,12 @@ export default function WeddingInvitation() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] relative overflow-x-hidden">
-      {/* KakaoTalk Browser Notice */}
-      {showBrowserBanner && (
-        <div className="fixed top-0 left-0 right-0 z-[60] bg-[#D4AF37] text-white px-4 py-3 flex items-center justify-between shadow-lg">
-          <div className="flex-1">
-            <p className="text-sm font-medium">더 나은 경험을 위해 외부 브라우저를 권장합니다</p>
-            <p className="text-xs opacity-90 mt-1">Safari 또는 Chrome에서 열어주세요</p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={openInExternalBrowser}
-              className="px-4 py-2 bg-white text-[#D4AF37] rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors whitespace-nowrap"
-            >
-              브라우저로 열기
-            </button>
-            <button
-              onClick={() => setShowBrowserBanner(false)}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-              aria-label="닫기"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Sticky Header */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 bg-white/90 border-b border-gray-200 ${
+        className={`fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-sm border-b border-gray-200 transition-transform duration-300 ${
           showHeader ? 'translate-y-0' : '-translate-y-full'
         }`}
-        style={{
-          transform: showHeader ? 'translate3d(0, 0, 0)' : 'translate3d(0, -100%, 0)',
-          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-          WebkitTransform: showHeader ? 'translate3d(0, 0, 0)' : 'translate3d(0, -100%, 0)',
-          WebkitTransition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-        }}
+        style={{ transform: showHeader ? 'translateY(0)' : 'translateY(-100%)', transition: 'transform 0.3s ease-in-out' }}
       >
         <nav className="max-w-4xl mx-auto px-6 py-4">
           <ul className="flex justify-around items-center text-sm text-gray-700">
@@ -361,7 +263,7 @@ export default function WeddingInvitation() {
           {/* Music Control Button */}
           <button
             onClick={toggleMusic}
-            className="fixed top-6 right-6 z-50 bg-white/90 p-3 rounded-full shadow-lg hover:bg-white transition-all"
+            className="fixed top-6 right-6 z-50 bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all"
             aria-label="음악 재생/정지"
           >
             {isPlaying ? (
@@ -373,8 +275,8 @@ export default function WeddingInvitation() {
         </>
       )}
 
-      {/* Falling Petals - Optimized for mobile */}
-      <div className="fixed inset-0 pointer-events-none z-10" style={{ willChange: 'auto' }}>
+      {/* Falling Petals */}
+      <div className="fixed inset-0 pointer-events-none z-50">
         {petals.map((petal: any) => (
           <div
             key={petal.id}
@@ -389,19 +291,21 @@ export default function WeddingInvitation() {
           </div>
         ))}
       </div>
-      {/* Hero Section */}
-      <section id="hero" className="relative w-full bg-white overflow-hidden" style={{ height: '100svh' }}>
-        <img
-          src="/images/hero.png"
-          alt="임진석♥신해숙"
-          className="w-full h-full object-cover object-top"
-        />
-      </section>
+      {/* Hero and Gallery Section - Side by Side */}
+      <section id="hero" className="relative min-h-screen w-full flex flex-col md:flex-row">
+        {/* Hero Photo - Left Side */}
+        <div className="relative w-full md:w-1/2 min-h-screen bg-white flex items-center justify-center">
+          <img
+            src="/images/hero.png"
+            alt="임진석♥신해숙"
+            className="w-full h-auto max-h-screen object-contain md:w-full md:h-full md:object-cover"
+          />
+        </div>
 
-      {/* Gallery Section */}
-      <section id="gallery" className="w-full bg-white/50 py-16 px-6">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
+        {/* Gallery - Right Side */}
+        <div id="gallery" className="w-full md:w-1/2 bg-white/50 py-16 px-6 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl font-serif text-center text-[#D4AF37] mb-8">Gallery</h2>
 
             {/* Vertical layout */}
             <div className="flex flex-col gap-2">
@@ -463,6 +367,7 @@ export default function WeddingInvitation() {
               </div>
             </div>
           </div>
+        </div>
       </section>
 
       {/* Main Message */}
@@ -519,10 +424,10 @@ export default function WeddingInvitation() {
       {/* Parents Info */}
       <section className="py-12 px-6">
         <div className="max-w-md mx-auto space-y-3 text-center">
-          <p className="text-gray-700 inline-block" style={{ letterSpacing: '0.05em', minWidth: '280px' }}>
+          <p className="text-gray-700 py-2" style={{ letterSpacing: '0.05em', lineHeight: '1.8' }}>
             故임봉원 · 박순옥 의 아들 진석
           </p>
-          <p className="text-gray-700 inline-block" style={{ letterSpacing: '0.1em', minWidth: '280px' }}>
+          <p className="text-gray-700 py-2" style={{ letterSpacing: '0.05em', lineHeight: '1.8' }}>
             故신동욱 · 김용길 의 딸 해숙
           </p>
         </div>
@@ -586,7 +491,7 @@ export default function WeddingInvitation() {
             </div>
           </div>
 
-          {/* Bride Contact */}
+          {/* Bride Contact */}1
           <div>
             <p className="text-sm text-center text-gray-600 mb-2">신부에게 연락하기</p>
             <div className="flex gap-2">
@@ -699,7 +604,7 @@ export default function WeddingInvitation() {
           <div className="space-y-4">
             {/* Groom Account */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
-              <p className="text-sm text-gray-500 mb-3">신랑측 계좌번호</p>
+              <p className="text-sm text-gray-500 mb-3">신랑측 계좌번호 농협</p>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">신랑 임진석</span>
@@ -716,7 +621,7 @@ export default function WeddingInvitation() {
 
             {/* Bride Account */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
-              <p className="text-sm text-gray-500 mb-3">신부측 계좌번호</p>
+              <p className="text-sm text-gray-500 mb-3">신부측 계좌번호 농협</p>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">신부 신해숙</span>
